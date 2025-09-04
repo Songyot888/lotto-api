@@ -32,6 +32,12 @@ namespace api_lotto.controllers
                 return BadRequest(new { message = "อีเมลนี้ถูกใช้ไปแล้ว" });
             }
 
+            var existingUserByPhone = await _context.Users.FirstOrDefaultAsync(u => u.Phone == dto.Phone);
+            if (existingUserByPhone != null)
+            {
+                return BadRequest(new { message = "เบอร์โทรศัพท์นี้ถูกใช้ไปแล้ว" });
+            }
+
             string hashedPassword = PasswordHelper.HashPassword(dto.Password);
             var user = dto.ToRegister(hashedPassword);
 
@@ -45,7 +51,7 @@ namespace api_lotto.controllers
                 Email = user.Email
             };
             // Return the response DTO
-             return Ok(RegisterResponse);
+            return Ok(RegisterResponse);
         }
     }
 }
