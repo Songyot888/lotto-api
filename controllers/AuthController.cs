@@ -18,7 +18,7 @@ namespace api_lotto.controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult>  Register([FromBody] RegisterDTO dto)
+        public async Task<IActionResult> Register([FromBody] RegisterDTO dto)
         {
             if (string.IsNullOrEmpty(dto.FullName) || string.IsNullOrEmpty(dto.Email) || string.IsNullOrEmpty(dto.Password))
             {
@@ -32,8 +32,11 @@ namespace api_lotto.controllers
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
             }
-            
-            return Ok();
+
+            return Ok(new RegisterDTO()
+            {
+                FullName = dto.FullName
+            });
         }
     }
 }

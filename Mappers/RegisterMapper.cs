@@ -14,7 +14,6 @@ namespace api_lotto.Mappers
                 Email = dto.Email,
                 Password = hashedPassword,
             };
-
         }
     }
 }
