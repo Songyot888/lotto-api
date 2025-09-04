@@ -39,14 +39,13 @@ namespace api_lotto.controllers
             await _context.SaveChangesAsync();
 
             // Map the new user to the response DTO
-            var userResponse = new RegisterDTO
+            var RegisterResponse = new RegisterResponseDTO
             {
                 FullName = user.FullName,
                 Email = user.Email
             };
-
             // Return the response DTO
-            return CreatedAtAction(nameof(Register), userResponse);
+             return Ok(RegisterResponse);
         }
     }
 }
