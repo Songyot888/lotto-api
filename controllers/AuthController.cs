@@ -18,6 +18,14 @@ namespace api_lotto.controllers
             _context = context;
         }
 
+
+        [HttpGet]
+        public IActionResult Getall()
+        {
+            var user = _context.Users.Include(t => t.)
+            return Ok();
+        }
+
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDTO dto)
         {
