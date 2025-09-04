@@ -33,10 +33,7 @@ namespace api_lotto.controllers
                 await _context.SaveChangesAsync();
             }
 
-            return Ok(new RegisterDTO
-            {
-                FullName = dto.FullName
-            });
+            return Ok( );
         }
     }
 }
