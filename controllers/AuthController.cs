@@ -39,6 +39,20 @@ namespace api_lotto.controllers
             return Ok(users);
         }
 
+        [HttpGet("user/{id}")]
+        public IActionResult GetById([FromRoute] int id)
+        {
+            var users = _context.Users.Where(t => t.Uid == id).FirstOrDefault();
+
+            if (users == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(users);
+        }
+
+
         [HttpPost("login")]
         public async Task<IActionResult> login([FromBody] LoginDTO dto)
         {
