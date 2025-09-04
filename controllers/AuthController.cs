@@ -4,6 +4,7 @@ using api_lotto.Helpers;
 using api_lotto.Mappers;
 using lotto_api.data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace api_lotto.controllers
 {
@@ -24,16 +25,28 @@ namespace api_lotto.controllers
             {
                 return BadRequest(new { message = "กรุณากรอกข้อมูลให้ครบ" });
             }
-            else
-            {
-                string hashedPassword = PasswordHelper.HashPassword(dto.Password);
-                var user = dto.ToRegister(hashedPassword);
 
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+            if (existingUser != null)
+            {
+                return BadRequest(new { message = "อีเมลนี้ถูกใช้ไปแล้ว" });
             }
 
-            return Ok( );
+            string hashedPassword = PasswordHelper.HashPassword(dto.Password);
+            var user = dto.ToRegister(hashedPassword);
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            // Map the new user to the response DTO
+            var userResponse = new RegisterDTO
+            {
+                FullName = user.FullName,
+                Email = user.Email
+            };
+
+            // Return the response DTO
+            return CreatedAtAction(nameof(Register), userResponse);
         }
     }
 }
