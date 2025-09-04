@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "ccLTP9HsMQ0=",
+  "dgSpecHash": "mpYJEbi39Us=",
   "success": true,
   "projectFilePath": "D:\\Mobile\\lotto_api\\lotto_api.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\nath\\.nuget\\packages\\bcrypt.net-next\\4.0.3\\bcrypt.net-next.4.0.3.nupkg.sha512",
     "C:\\Users\\nath\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\nath\\.nuget\\packages\\microsoft.aspnetcore.jsonpatch\\9.0.8\\microsoft.aspnetcore.jsonpatch.9.0.8.nupkg.sha512",
     "C:\\Users\\nath\\.nuget\\packages\\microsoft.aspnetcore.mvc.newtonsoftjson\\9.0.8\\microsoft.aspnetcore.mvc.newtonsoftjson.9.0.8.nupkg.sha512",

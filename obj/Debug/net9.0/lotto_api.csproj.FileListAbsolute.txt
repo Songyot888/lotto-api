@@ -136,3 +136,9 @@ D:\Mobile\lotto_api\bin\Debug\net9.0\publish\appsettings.json
 D:\Mobile\lotto_api\bin\Debug\net9.0\publish\lotto_api.deps.json
 D:\Mobile\lotto_api\bin\Debug\net9.0\publish\lotto_api.runtimeconfig.json
 D:\Mobile\lotto_api\bin\Debug\net9.0\publish\lotto_api.staticwebassets.endpoints.json
+D:\Mobile\lotto_api\bin\Debug\net9.0\Microsoft.AspNetCore.JsonPatch.dll
+D:\Mobile\lotto_api\bin\Debug\net9.0\Microsoft.AspNetCore.Mvc.NewtonsoftJson.dll
+D:\Mobile\lotto_api\bin\Debug\net9.0\Newtonsoft.Json.dll
+D:\Mobile\lotto_api\bin\Debug\net9.0\Newtonsoft.Json.Bson.dll
+D:\Mobile\lotto_api\obj\Debug\net9.0\lotto_api.sourcelink.json
+D:\Mobile\lotto_api\bin\Debug\net9.0\BCrypt.Net-Next.dll

@@ -17,5 +17,16 @@ namespace api_lotto.Mappers
                 Password = hashedPassword,
             };
         }
+
+        public static AuthRegisterResponseDTO ToAuthRegisterResponse(this User u) =>
+           new AuthRegisterResponseDTO
+           {
+               Uid = (int)u.Uid,
+               FullName = u.FullName,
+               Email = u.Email,
+               BankName = u.BankName,
+               BankNumber = u.BankNumber
+           };
+
     }
 }
