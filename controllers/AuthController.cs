@@ -100,6 +100,7 @@ namespace api_lotto.controllers
             {
                 return BadRequest(new { message = "เลขบัญชีนี้ถูกใช้ไปแล้ว" });
             }
+            
 
             string hashedPassword = PasswordHelper.HashPassword(dto.Password);
             var user = dto.ToRegister(hashedPassword);
