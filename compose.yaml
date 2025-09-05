@@ -1,10 +1,15 @@
-# Please refer https://aka.ms/HTTPSinContainer on how to setup an https developer certificate for your ASP.NET Core service.
+version: "3.9"
 
 services:
   lottoapi:
-    image: lottoapi
     build:
       context: .
-      dockerfile: ./Dockerfile
+      dockerfile: Dockerfile
+    image: lottoapi:latest
+    container_name: lottoapi
     ports:
-      - 5197:5197
+      - "8080:8080"   # ภายนอก:ภายใน
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ASPNETCORE_URLS: "http://+:8080"
+    restart: unless-stopped
