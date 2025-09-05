@@ -9,16 +9,19 @@ namespace lotto_api.Mappers
         {
             return new User
             {
-                
+
             };
         }
-        
-         public static AuthLoginResponseDTO ToAuthLoginResponse(this User u) =>
-           new AuthLoginResponseDTO
-           {
-               Uid = (int)u.Uid,
-               FullName = u.FullName,
-               Email = u.Email,
-           };
+
+        public static AuthLoginResponseDTO ToAuthLoginResponse(this User u) =>
+          new AuthLoginResponseDTO
+          {
+              Uid = (int)u.Uid,
+              FullName = u.FullName,
+              Email = u.Email,
+              Phone = u.Phone,
+              BankName = u.BankName,
+              BankNumber = u.BankNumber,
+          };
     }
 }

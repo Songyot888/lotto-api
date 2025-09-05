@@ -27,6 +27,5 @@ namespace api_lotto.Mappers
                BankName = u.BankName,
                BankNumber = u.BankNumber
            };
-
     }
 }
