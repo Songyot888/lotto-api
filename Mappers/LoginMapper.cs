@@ -22,6 +22,7 @@ namespace lotto_api.Mappers
               Phone = u.Phone,
               BankName = u.BankName,
               BankNumber = u.BankNumber,
+              
           };
     }
 }
