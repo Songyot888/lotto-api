@@ -15,7 +15,7 @@ RUN dotnet build "lotto_api.csproj" -c $configuration -o /app/build
 
 FROM build AS publish
 ARG configuration=Release
-RUN dotnet publish "lotto_api.csproj" -c $configuration -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "lotto_api.csproj" -c $configuration -o /app/publish /p:UseAppHost=true
 
 FROM base AS final
 WORKDIR /app
