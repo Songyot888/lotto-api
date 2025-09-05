@@ -1,5 +1,13 @@
 {
     "cSpell.words": [
         "Getall"
-    ]
+    ],
+    "terminal.integrated.accessibleViewFocusOnCommandExecution": true,
+    "terminal.integrated.allowMnemonics": true,
+    "terminal.integrated.suggest.enabled": true,
+    "terminal.integrated.suggest.providers": {
+
+        "core:pwsh-shell-integration": false,
+        "terminal-suggest": true
+    }
 }
