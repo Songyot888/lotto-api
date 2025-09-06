@@ -13,7 +13,11 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("lotto_api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
+<<<<<<< HEAD
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+68fe1ed929816f6b98b5c2c5b0198e53f946684d")]
+=======
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+330e7f2964e65def199b80e60beae121eb170297")]
+>>>>>>> 3347b326c5a6b361a651ea5f075de19530f86f34
 [assembly: System.Reflection.AssemblyProductAttribute("lotto_api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("lotto_api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
