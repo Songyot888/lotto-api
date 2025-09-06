@@ -15,6 +15,8 @@ namespace api_lotto.controllers
             _context = context;
         }
 
+        
+
         // -------------------------------
         // 1. ดูยอดเงินใน Wallet
         // -------------------------------
