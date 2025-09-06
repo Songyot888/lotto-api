@@ -23,7 +23,8 @@ namespace lotto_api.Mappers
               Balance = u.Balance,
               BankName = u.BankName,
               BankNumber = u.BankNumber,
-              
+              Role = u.Role
+
           };
     }
 }

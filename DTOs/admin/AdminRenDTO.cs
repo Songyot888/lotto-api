@@ -2,7 +2,7 @@ namespace api_lotto.DTOs.admin
 {
     public class AdminRenDTO
     {
-        public int Uid { get; set; }
+
         public decimal Number { get; set; }
     }
     

@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace lotto_api.controllers
 {
+    [ApiController]
+    [Route("api/[controller]")]
     public class AdminController : ControllerBase
     {
         private readonly LotteryDbContext _context;
@@ -32,12 +34,14 @@ namespace lotto_api.controllers
                 numbers.Add(number);
                 existing.Add(number);
             }
-            var  lotto = new Lottery();
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Role == "admin");
+
+            var lotto = new Lottery();
             foreach (var num in numbers)
             {
                 lotto = new Lottery
-                {   
-                    Uid = (uint)dto.Uid,
+                {
+                    Uid = user.Uid,
                     Number = num,
                     Price = 100.00m,
                     Total = 1,
@@ -51,7 +55,7 @@ namespace lotto_api.controllers
             }
 
             await _context.SaveChangesAsync();
-            return Ok(new { message = $"{dto.Number} lottery numbers added." ,lotto = lotto.To_NewLottoResponse() });
+            return Ok(new { message = $"{dto.Number} lottery numbers added.", lotto = lotto.To_NewLottoResponse() });
         }
     }
 }
