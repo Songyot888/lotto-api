@@ -11,6 +11,7 @@ namespace api_lotto.controllers
         public LottoController(LotteryDbContext context)
         {
             _context = context;
+            
         }
 
 
