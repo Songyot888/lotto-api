@@ -97,5 +97,6 @@ public partial class LotteryDbContext : DbContext
         OnModelCreatingPartial(modelBuilder);
     }
 
+
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }
