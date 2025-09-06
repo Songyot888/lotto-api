@@ -60,7 +60,7 @@ namespace lotto_api.controllers
 
                 _context.Lotteries.Add(lotto);
             }
-
+            await _context.SaveChangesAsync();
             var res = _context.Lotteries.Select(l => new
             {
                 l.Lid,
@@ -70,18 +70,14 @@ namespace lotto_api.controllers
                 l.EndDate
             }).ToList();
 
-            await _context.SaveChangesAsync();
+
             return Ok(new { message = $"{dto.Number} lottery numbers added.", lotto = res });
         }
 
         [HttpPost("result-lottery")]
         public async Task<IActionResult> ResultLottery([FromBody] AdminOutResult dto)
         {
-            const int r1 = 1;
-            const int r2 = 2;
-            const int r3 = 3;
-            const int r4 = 4;
-            const int r5 = 5;
+
             const decimal PayFirst = 6000000m;
             const decimal PaySecond = 2000000m;
             const decimal PayThird = 1000000m;
@@ -101,7 +97,7 @@ namespace lotto_api.controllers
                 return BadRequest(new { message = "มีการออกรางวัลแล้ว กรุณารีเซ็ตระบบก่อนทำการสุ่มใหม่" });
             }
 
-            
+
             var pool = await _context.Lotteries
             .Where(l => l.Status == true)
             .Select(l => new { l.Lid, l.Number })
@@ -134,8 +130,6 @@ namespace lotto_api.controllers
 
             using var tx = await _context.Database.BeginTransactionAsync();
 
-
-            await _context.Results.ExecuteDeleteAsync();
             await _context.SaveChangesAsync();
 
 
