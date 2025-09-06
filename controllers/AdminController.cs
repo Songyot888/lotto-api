@@ -43,6 +43,11 @@ namespace lotto_api.controllers
                 return NotFound(new { message = "Admin user not found." });
             }
 
+            if (user.Role != "admin")
+            {
+                return NotFound(new { message = "คุณไม่ใช่ผู้ดูแลระบบ." });
+            }
+
             var lotto = new Lottery();
             foreach (var num in numbers)
             {
