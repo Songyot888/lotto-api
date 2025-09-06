@@ -14,7 +14,8 @@ namespace api_lotto.DTOs.auth
         public decimal Balance { get; set; }
         public string Phone { get; set; } = string.Empty;
         public string BankName { get; set; } = string.Empty;
-        public string BankNumber{ get; set; } = string.Empty;
+        public string BankNumber { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
 
     }
 }

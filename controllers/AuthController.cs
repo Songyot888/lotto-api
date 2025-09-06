@@ -42,7 +42,17 @@ namespace api_lotto.controllers
         [HttpGet("user/{id}")]
         public IActionResult GetById([FromRoute] int id)
         {
-            var users = _context.Users.Where(t => t.Uid == id).FirstOrDefault();
+            var users = _context.Users.Where(t => t.Uid == id).Select(u => new
+            {
+                u.Uid,
+                u.FullName,
+                u.Email,
+                u.Phone,
+                u.Balance,
+                u.BankName,
+                u.BankNumber,
+                u.Role
+            }).FirstOrDefault();
 
             if (users == null)
             {
