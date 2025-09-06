@@ -2,11 +2,7 @@ namespace api_lotto.DTOs.admin
 {
     public class AdminRenDTO
     {
-<<<<<<< HEAD
-
-=======
         public string Role { get; set; } = string.Empty;
->>>>>>> 330e7f2964e65def199b80e60beae121eb170297
         public decimal Number { get; set; }
     }
     
