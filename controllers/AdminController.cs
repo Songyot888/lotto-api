@@ -94,6 +94,14 @@ namespace lotto_api.controllers
             if (!string.Equals(user.Role, "admin", StringComparison.OrdinalIgnoreCase))
                 return Unauthorized(new { message = "เฉพาะผู้ดูแลระบบเท่านั้นที่สามารถจับสลากหรือประกาศผลได้." });
 
+
+            var existingResults = await _context.Results.AnyAsync();
+            if (existingResults)
+            {
+                return BadRequest(new { message = "มีการออกรางวัลแล้ว กรุณารีเซ็ตระบบก่อนทำการสุ่มใหม่" });
+            }
+
+            
             var pool = await _context.Lotteries
             .Where(l => l.Status == true)
             .Select(l => new { l.Lid, l.Number })
