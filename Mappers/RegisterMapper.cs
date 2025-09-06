@@ -12,6 +12,7 @@ namespace api_lotto.Mappers
                 FullName = dto.FullName,
                 Phone = dto.Phone,
                 Email = dto.Email,
+                Balance = dto.Balance,
                 BankName = dto.BankName,
                 BankNumber = dto.BankNumber,
                 Password = hashedPassword,

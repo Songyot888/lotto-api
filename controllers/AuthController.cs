@@ -39,6 +39,7 @@ namespace api_lotto.controllers
             return Ok(users);
         }
 
+
         [HttpGet("user/{id}")]
         public IActionResult GetById([FromRoute] int id)
         {

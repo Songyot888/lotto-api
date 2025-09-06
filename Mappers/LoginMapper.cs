@@ -20,6 +20,7 @@ namespace lotto_api.Mappers
               FullName = u.FullName,
               Email = u.Email,
               Phone = u.Phone,
+              Balance = u.Balance,
               BankName = u.BankName,
               BankNumber = u.BankNumber,
               
