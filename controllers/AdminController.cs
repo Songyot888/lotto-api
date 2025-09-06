@@ -34,8 +34,13 @@ namespace lotto_api.controllers
                 numbers.Add(number);
                 existing.Add(number);
             }
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Role == "admin");
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Role == dto.Role );
 
+            if (user == null)
+            {
+                return NotFound(new { message = "Admin user not found." });
+            }
+            
             var lotto = new Lottery();
             foreach (var num in numbers)
             {
