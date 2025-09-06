@@ -12,17 +12,17 @@ public partial class Result
 {
     [Key]
     [Column("rid")]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public uint Rid { get; set; }
 
     [Column("lid")]
     public uint Lid { get; set; }
 
     [Column("payout_rate")]
-    [Precision(8, 2)]
+    [Precision(12, 2)]
     public decimal PayoutRate { get; set; }
 
     [ForeignKey("Lid")]
     [InverseProperty("Results")]
     public virtual Lottery LidNavigation { get; set; } = null!;
-    public bool IsWin { get; internal set; }
 }
