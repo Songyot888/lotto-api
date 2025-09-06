@@ -24,4 +24,5 @@ public partial class Result
     [ForeignKey("Lid")]
     [InverseProperty("Results")]
     public virtual Lottery LidNavigation { get; set; } = null!;
+    public bool IsWin { get; internal set; }
 }
