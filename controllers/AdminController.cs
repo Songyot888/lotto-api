@@ -188,10 +188,9 @@ namespace lotto_api.controllers
         {
             var users = await _context.Users.Select(u => new
             {
-                u.Balance,
+          
                 u.FullName,
-                u.Email,
-                u.Date
+           
             }).ToListAsync();
 
 
