@@ -183,12 +183,16 @@ namespace lotto_api.controllers
             });
         }
 
-        [HttpPost("result-lottery")]
+        [HttpPost("reset-lottery")]
         public async Task<IActionResult> Reset_Lottery()
         {
+            var users = await _context.Users.ToListAsync();
+
+
             return Ok(new
             {
-                message = "สำเร็จ"
+                message = "สำเร็จ",
+                user = users
             });
         }
     }
