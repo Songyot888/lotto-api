@@ -186,7 +186,12 @@ namespace lotto_api.controllers
         [HttpPost("reset-lottery")]
         public async Task<IActionResult> Reset_Lottery()
         {
-            var users = await _context.Users.ToListAsync();
+            var users = await _context.Users.Select(u => new
+            {
+                u.Balance,
+                u.FullName,
+                u.Email
+            }).ToListAsync();
 
 
             return Ok(new
