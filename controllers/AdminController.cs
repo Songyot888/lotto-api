@@ -3,6 +3,7 @@ using lotto_api.data;
 using lotto_api.DTOs.admin;
 using lotto_api.Mappers;
 using lotto_api.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -179,6 +180,15 @@ namespace lotto_api.controllers
                     last3 = new { result = "รางวัลที่4", last3, payoutEach = PayLast3 },
                     last2 = new { result = "รางวัลที่5", last2, payoutEach = PayLast2 }
                 }
+            });
+        }
+
+        [HttpPost("result-lottery")]
+        public async Task<IActionResult> Reset_Lottery()
+        {
+            return Ok(new
+            {
+                message = "สำเร็จ"
             });
         }
     }
