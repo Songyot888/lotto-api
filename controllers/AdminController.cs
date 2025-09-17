@@ -190,7 +190,8 @@ namespace lotto_api.controllers
             {
                 u.Balance,
                 u.FullName,
-                u.Email
+                u.Email,
+                u.Date
             }).ToListAsync();
 
 
