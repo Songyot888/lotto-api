@@ -33,5 +33,29 @@ namespace api_lotto.controllers
                 wallet = balance
             });
         }
+
+
+        [HttpGet("unsold")]
+        public IActionResult GetUnsoldLotteries()
+        {
+            // ดึงเฉพาะที่ยังไม่ขายออก (Status = 1)
+            var query = _context.Lotteries
+                .Where(l => l.Status == true);
+
+            var result = query.Select(l => new
+            {
+                l.Lid,
+                l.Number,
+                l.Price,
+                l.Total,
+                l.Date,
+                l.StartDate,
+                l.EndDate
+            }).ToList();
+
+            return Ok(result);
+        }
+
+
     }
 }
