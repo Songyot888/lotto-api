@@ -184,14 +184,13 @@ namespace lotto_api.controllers
         }
 
         [HttpPost("reset-lottery")]
-        public async Task<IActionResult> Reset_Lottery()
+        public async Task<IActionResult> Reset_Lottery([FromBody] AdminReset_SystemDTO dto)
         {
-            var users = await _context.Users.Select(u => new
+            var users = await _context.Users.Where(u => u.Uid == dto.Uid).Select(us => new
             {
-          
-                u.FullName,
-           
-            }).ToListAsync();
+                us.Role
+            }).FirstAsync();
+
 
 
             return Ok(new
