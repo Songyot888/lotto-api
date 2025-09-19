@@ -183,21 +183,23 @@ namespace lotto_api.controllers
             });
         }
 
-        [HttpPost("reset-lottery")]
-        public async Task<IActionResult> Reset_Lottery()
+        [HttpPost("clear")]
+        public async Task<IActionResult> ClearData([FromBody] Admin_ResetDTO dTO)
         {
-            var users = await _context.Users.Select(u => new
-            {
-          
-                u.FullName,
-           
-            }).ToListAsync();
+            _context.Orders.RemoveRange(_context.Orders);
+            _context.Results.RemoveRange(_context.Results);
+            _context.Lotteries.RemoveRange(_context.Lotteries);
+            _context.WalletTxns.RemoveRange(_context.WalletTxns);
+            var usersToDelete = await _context.Users
+                .Where(u => u.Role != "ADMIN")
+                .ToListAsync();
+            _context.Users.RemoveRange(usersToDelete);
 
+            await _context.SaveChangesAsync();
 
             return Ok(new
             {
-                message = "สำเร็จ",
-                user = users
+                message = "ล้างข้อมูลสำเร็จ"
             });
         }
     }
