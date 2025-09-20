@@ -1,21 +1,17 @@
-
 using lotto_api.Data;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// อ่านคอนเนกชันสตริงจาก appsettings.json
+// อ่านจาก Environment Variable (Railway จะส่งเข้ามาเอง)
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-// ระบุเวอร์ชัน DB ให้ตรง (แนะนำใช้รูปแบบตัวพิมพ์เล็ก)
-var serverVersion = ServerVersion.Parse("10.6.21-mariadb");
+var serverVersion = ServerVersion.AutoDetect(connectionString);
 
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
     options.UseMySql(connectionString, serverVersion)
 );
 
-// Swagger & MVC
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers().AddNewtonsoftJson(opt =>
@@ -28,7 +24,6 @@ var app = builder.Build();
 
 app.UseSwagger();
 app.UseSwaggerUI();
-// app.UseHttpsRedirection();
 app.MapControllers();
 
 app.Run();
