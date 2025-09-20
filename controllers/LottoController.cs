@@ -1,7 +1,11 @@
-using lotto_api.data;
-using Microsoft.AspNetCore.Mvc;
+
+using lotto_api.Data;
+using lotto_api.DTOs.lottory;
 using lotto_api.Models;
+using Microsoft.AspNetCore.Mvc;
+// using lotto_api.Models;
 using Microsoft.EntityFrameworkCore;
+// using lotto_api.Data;
 
 
 namespace api_lotto.controllers
@@ -10,14 +14,30 @@ namespace api_lotto.controllers
     [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
-        private readonly LotteryDbContext _context;
-        public UserController(LotteryDbContext context)
+        private readonly ApplicationDBContext _context;
+        public UserController(ApplicationDBContext context)
         {
             _context = context;
         }
 
 
-        //เลือกดูและค้นหารายการลอตเตอรี่ที่มีในระบบที่ยังไม่ขายออกได้
+
+        [HttpGet("result")]
+        public async Task<IActionResult> GetResultSummary()
+        {
+
+            var result = await _context.Results.Select(s => new
+            {
+                s.PayoutRate,
+                s.Amount
+            }).ToListAsync();
+            return Ok(new
+            {
+                message = "รางวัลที่ออก",
+                result
+            });
+        }
+
         [HttpGet("unsold")]
         public IActionResult GetUnsoldLotteries()
         {
@@ -39,62 +59,42 @@ namespace api_lotto.controllers
         }
 
 
-        //ซื้อหวย
-        [HttpPost("buy")] // เรียกแบบ: POST /api/LottoUser/buy?memberId=34&lotteryId=3
-        public IActionResult BuyLottery([FromQuery] uint memberId, [FromQuery] uint lotteryId)
+        [HttpPost("buy")]
+        public IActionResult BuyLottery([FromBody] buyDTO dto)
         {
-            using var transaction = _context.Database.BeginTransaction(); // เปิด Transaction เพื่อให้ทุกขั้นตอนสำเร็จ/ล้มเหลวพร้อมกัน
+            using var transaction = _context.Database.BeginTransaction();
             try
             {
-                // 1) หา User ผู้ซื้อจากตาราง Users ตาม uid ที่ส่งมา
-                var user = _context.Users.FirstOrDefault(u => u.Uid == memberId);
+                var user = _context.Users.FirstOrDefault(u => u.Uid == dto.memberId);
                 if (user == null)
-                    return NotFound(new { message = "ไม่พบสมาชิก" }); // ถ้าไม่มีผู้ใช้ → 404
+                    return NotFound(new { message = "ไม่พบสมาชิก" });
 
-                // 2) หา Lottery ใบที่ต้องการซื้อ และต้องยังขายได้ (Status = true)
-                var lottery = _context.Lotteries.FirstOrDefault(l => l.Lid == lotteryId && l.Status == true);
+                var lottery = _context.Lotteries.FirstOrDefault(l => l.Lid == dto.lotteryId && l.Status == true);
                 if (lottery == null)
-                    return BadRequest(new { message = "ลอตเตอรี่ถูกขายแล้วหรือไม่มีอยู่" }); // ไม่พบหรือถูกขายแล้ว → 400
+                    return BadRequest(new { message = "ลอตเตอรี่ถูกขายแล้วหรือไม่มีอยู่" });
 
-                // 3) ตรวจสอบยอดเงินใน Wallet ของผู้ใช้ว่าพอจ่ายราคาใบนี้ไหม
                 if (user.Balance < lottery.Price)
-                    return BadRequest(new { message = "ยอดเงินใน Wallet ไม่พอ" }); // เงินไม่พอ → 400
+                    return BadRequest(new { message = "ยอดเงินใน Wallet ไม่พอ" });
 
-                // 4) ตัดเงินจาก Wallet: ยอดคงเหลือ = ยอดเดิม - ราคา
+                // ตัดเงิน
                 user.Balance -= lottery.Price;
 
-                // 5) อัปเดตสถานะลอตเตอรี่ → ขายแล้ว และบันทึกเจ้าของ (uid) เป็นผู้ซื้อ
-                lottery.Status = false;     // false = ขายแล้ว
-                lottery.Uid = memberId;     // กำหนดว่า user นี้คือเจ้าของ
-
-                // 6) บันทึกรายการกระเป๋าเงิน (WalletTxn) เป็นการถอนเงินออกเพื่อซื้อหวย
-                var txn = new WalletTxn
-                {
-                    Uid = memberId,         // ใครทำธุรกรรม
-                    Withdraw = lottery.Price, // เงินที่ถูกหักออก
-                    TopUp = null,             // ไม่มีการเติมเงินกรณีนี้
-                    Status = true,            // ทำธุรกรรมสำเร็จ
-                    Date = DateTime.Now       // เวลาที่เกิดรายการ
-                };
-                _context.WalletTxns.Add(txn); // คิวรอ insert
+                // อัปเดตสถานะลอตเตอรี่ (ขายแล้ว) ✅ ไม่เปลี่ยน Uid
+                lottery.Status = false;
 
 
-                // 7) สร้าง Order เพื่อเก็บประวัติว่าผู้ใช้คนนี้ซื้อหวยใบไหน เมื่อไหร่
+                // บันทึก Order → ใครซื้อใบนี้
                 var order = new Order
                 {
-                    Uid = memberId,         // ผู้ซื้อ
-                    Lid = lotteryId,        // หวยที่ซื้อ
-                    Date = DateTime.Now     // เวลา
+                    Uid = (uint)dto.memberId,
+                    Lid = (uint)dto.lotteryId,
+                    Date = DateTime.Now
                 };
-                _context.Orders.Add(order); // คิวรอ insert
+                _context.Orders.Add(order);
 
-                // 8) บันทึกการเปลี่ยนแปลงทั้งหมดลงฐานข้อมูล (Users, Lotteries, WalletTxns, Orders)
                 _context.SaveChanges();
-
-                // 9) ทุกอย่างผ่าน → ยืนยัน Transaction
                 transaction.Commit();
 
-                // 10) ตอบกลับผลลัพธ์ให้ Client เห็นเลขที่ซื้อ ราคา และยอดคงเหลือ
                 return Ok(new
                 {
                     message = "ซื้อสำเร็จ",
@@ -107,21 +107,22 @@ namespace api_lotto.controllers
             }
             catch (Exception ex)
             {
-                transaction.Rollback(); // เกิดข้อผิดพลาด → ยกเลิกทุกการเปลี่ยนแปลง
-                return StatusCode(500, new { message = "เกิดข้อผิดพลาด", error = ex.Message }); // ตอบ 500 พร้อมข้อความ error
+                transaction.Rollback();
+                return StatusCode(500, new { message = "เกิดข้อผิดพลาด", error = ex.Message });
             }
         }
 
 
-        [HttpGet("checkwallet")]
-        public IActionResult GetWallet([FromRoute] uint memberId)
+
+        [HttpPost("checkwallet")]
+        public IActionResult GetWallet([FromBody] checkwalletDTO dto)
         {
-            var user = _context.Users.FirstOrDefault(u => u.Uid == memberId);
+            var user = _context.Users.FirstOrDefault(u => u.Uid == dto.memberId);
             if (user == null)
                 return NotFound(new { message = "ไม่พบสมาชิก" });
 
             var balance = _context.Users
-                .Where(w => w.Uid == memberId)
+                .Where(w => w.Uid == dto.memberId)
                 .Select(u => new
                 {
                     u.Uid,
@@ -134,27 +135,27 @@ namespace api_lotto.controllers
         }
 
 
-        [HttpGet("check")]
-        public IActionResult CheckResult([FromQuery] uint memberId, [FromQuery] ulong orderId)
+        [HttpPost("check")]
+        public IActionResult CheckResult([FromBody] checkLottortDTO dto)
         {
-            // 1) ไปหาข้อมูลการสั่งซื้อ (Order) ของ user ที่ส่งมา
             var order = _context.Orders
-                .Include(o => o.LidNavigation)        
-                .ThenInclude(l => l.Results)       
-                .FirstOrDefault(o => o.Oid == orderId && o.Uid == memberId);
+                .Where(o => o.Uid == dto.memberId && o.Lid == dto.lid)
+                .Select(s => new
+                {
+                    s.Oid,
+                    Lottery = s.LidNavigation
+                })
+                .FirstOrDefault();
 
-            // ถ้าไม่เจอเลย แสดงว่า orderId นี้ไม่ใช่ของ user หรือไม่มีอยู่จริง
             if (order == null)
             {
-                return NotFound(new { message = "ไม่พบข้อมูลการซื้อ" });
+                return NotFound(new { message = "ไม่พบข้อมูลการซื้อของ user กับหวยใบนี้" });
             }
 
-            // lottery ที่ user ซื้อมา
-            var lottery = order.LidNavigation;
+            var lottery = order.Lottery;
 
-            // 2) ตรวจว่ามีการประกาศผลรางวัลแล้วหรือยัง
-            var result = lottery.Results.FirstOrDefault();
-            if (result == null)
+            var results = _context.Results.ToList();
+            if (results.Count == 0)
             {
                 return Ok(new
                 {
@@ -166,10 +167,9 @@ namespace api_lotto.controllers
                 });
             }
 
-            // 3) ถ้ามีผลแล้ว คำนวณรางวัลจากราคาหวย * payout rate
-            decimal prize = lottery.Price * result.PayoutRate;
+            var matched = results.FirstOrDefault(r => lottery.Number!.EndsWith(r.Amount.ToString()));
+            decimal prize = matched?.PayoutRate ?? 0;
 
-            // 4) ตอบกลับ โดยยังไม่ได้บวกเงินเข้ากระเป๋า
             return Ok(new
             {
                 message = prize > 0 ? "ถูกรางวัล" : "ไม่ถูกรางวัล",
@@ -181,74 +181,157 @@ namespace api_lotto.controllers
         }
 
 
+
         [HttpPost("claim")]
-        public IActionResult ClaimPrize([FromQuery] uint memberId, [FromQuery] ulong orderId)
+        public IActionResult ClaimPrize([FromBody] claimDTO dto)
         {
-            // 1) หา Order ของ user ที่ต้องการขึ้นเงิน
+            // 1) หา Order ของ user สำหรับใบที่ระบุ (cast ให้ชนิดตรงกับ model)
             var order = _context.Orders
-                .Include(o => o.LidNavigation)
-                .ThenInclude(l => l.Results)
-                .FirstOrDefault(o => o.Oid == orderId && o.Uid == memberId);
+                .Where(o => o.Uid == (uint)dto.memberId && o.Oid == (uint)dto.orderId)
+                .Select(s => new
+                {
+                    s.Lid,
+                    Lottery = s.LidNavigation
+                })
+                .FirstOrDefault();
 
             if (order == null)
-            {
                 return NotFound(new { message = "ไม่พบข้อมูลการซื้อ" });
-            }
 
-            var lottery = order.LidNavigation;
-            var result = lottery.Results.FirstOrDefault();
+            var lottery = order.Lottery;
 
-            // ถ้ายังไม่มีผลรางวัล
-            if (result == null)
-            {
+            // 2) ต้องมีการออกรางวัลแล้ว
+            var results = _context.Results
+                .Select(r => new { r.Amount, r.PayoutRate })
+                .ToList();
+
+            if (results.Count == 0)
                 return BadRequest(new { message = "ยังไม่มีการออกรางวัล" });
-            }
 
-            // 2) คำนวณเงินรางวัล
-            decimal prize = lottery.Price * result.PayoutRate;
+            var matched = results.FirstOrDefault(r => lottery.Number != null && lottery.Number.EndsWith(r.Amount.ToString()));
+            var prize = matched?.PayoutRate ?? 0m;
+
             if (prize <= 0)
             {
-                return BadRequest(new { message = "ไม่ถูกรางวัล" });
+                return BadRequest(new
+                {
+                    message = "ไม่ถูกรางวัล",
+                    lotteryId = lottery.Lid,
+                    number = lottery.Number,
+                    amount = 0,
+                    status = "ไม่ถูกรางวัลจริงๆ"
+                });
             }
 
-            // 3) กันการขึ้นเงินซ้ำ → เช็กจาก WalletTxn ว่าเคยโอนเงินรางวัลไปแล้วหรือยัง
-            bool alreadyClaimed = _context.WalletTxns.Any(t =>
-                t.Uid == memberId &&
-                t.TopUp == prize &&
-                t.Date.Date == DateTime.Now.Date
-            );
-
-            if (alreadyClaimed)
-            {
-                return BadRequest(new { message = "ลอตเตอรี่ใบนี้ขึ้นเงินไปแล้ว", lotteryId = lottery.Lid });
-            }
-
-            // 4) ถ้าไม่เคยขึ้น → บวกเงินเข้ากระเป๋าของ user
-            var user = _context.Users.First(u => u.Uid == memberId);
+            var user = _context.Users.First(u => u.Uid == (uint)dto.memberId);
             user.Balance += prize;
 
-            // 5) บันทึกธุรกรรมการเติมเงินรางวัล
-            var txn = new WalletTxn
-            {
-                Uid = memberId,
-                TopUp = prize,
-                Withdraw = null,
-                Status = true,
-                Date = DateTime.Now
-            };
-            _context.WalletTxns.Add(txn);
-
-            // 6) เซฟข้อมูลลงฐานข้อมูล
             _context.SaveChanges();
 
-            // 7) ตอบกลับผลลัพธ์
             return Ok(new
             {
                 message = "ขึ้นเงินสำเร็จ",
                 lotteryId = lottery.Lid,
+                number = lottery.Number,
                 amount = prize,
                 wallet = user.Balance
             });
+        }
+
+
+        [HttpPost("topup")]
+        public IActionResult TopUp([FromBody] TopupDTO dto)
+        {
+            try
+            {
+                // 1) หา user
+                var user = _context.Users.FirstOrDefault(u => u.Uid == (uint)dto.memberId);
+                if (user == null)
+                    return NotFound(new { message = "ไม่พบผู้ใช้" });
+
+                if (dto.money <= 0)
+                    return BadRequest(new { message = "จำนวนเงินต้องมากกว่า 0" });
+
+                user.Balance += dto.money;
+
+                var txn = new WalletTxn
+                {
+                    Uid = (uint)dto.memberId,
+                    TopUp = dto.money,
+                    Withdraw = 0,
+                    Status = true,
+                    Date = DateTime.Now
+                };
+                _context.WalletTxns.Add(txn);
+
+                // 4) เซฟลง DB
+                _context.SaveChanges();
+
+                // 5) ตอบกลับ
+                return Ok(new
+                {
+                    message = "เติมเงินสำเร็จ",
+                    memberId = user.Uid,
+                    amount = dto.money,
+                    wallet = user.Balance
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "เกิดข้อผิดพลาด", error = ex.Message });
+            }
+        }
+
+        [HttpPost("withdraw")]
+        public IActionResult withdraw([FromBody] withdrawDTO dto)
+        {
+            try
+            {
+                // 1) หา user
+                var user = _context.Users.FirstOrDefault(u => u.Uid == (uint)dto.memberId);
+                if (user == null)
+                    return NotFound(new { message = "ไม่พบผู้ใช้" });
+
+                if (dto.money <= 0)
+                    return BadRequest(new { message = "จำนวนเงินต้องมากกว่า 0" });
+
+
+
+                if (dto.money > user.Balance)
+                {
+                    return BadRequest(new { message = "ยอดเงินไม่เพียงพอ" });
+                }
+                else
+                {
+                    user.Balance -= dto.money;
+                }
+
+                var txn = new WalletTxn
+                {
+                    Uid = (uint)dto.memberId,
+                    TopUp = 0,
+                    Withdraw = dto.money,
+                    Status = true,
+                    Date = DateTime.Now
+                };
+                _context.WalletTxns.Add(txn);
+
+                // 4) เซฟลง DB
+                _context.SaveChanges();
+
+                // 5) ตอบกลับ
+                return Ok(new
+                {
+                    message = "ถอนเงินสำเร็จ",
+                    memberId = user.Uid,
+                    amount = dto.money,
+                    wallet = user.Balance
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "เกิดข้อผิดพลาด", error = ex.Message });
+            }
         }
 
     }

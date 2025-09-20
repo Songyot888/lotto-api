@@ -1,34 +1,34 @@
-using lotto_api.data;
+
+using lotto_api.Data;
 using Microsoft.EntityFrameworkCore;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddDbContext<LotteryDbContext>(options =>
-    options.UseMySql(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))
-    ));
 
-builder.Services.AddDbContext<LotteryDbContext>(options =>
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
+// อ่านคอนเนกชันสตริงจาก appsettings.json
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+// ระบุเวอร์ชัน DB ให้ตรง (แนะนำใช้รูปแบบตัวพิมพ์เล็ก)
+var serverVersion = ServerVersion.Parse("10.6.21-mariadb");
+
+builder.Services.AddDbContext<ApplicationDBContext>(options =>
+    options.UseMySql(connectionString, serverVersion)
 );
 
+// Swagger & MVC
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddControllers().AddNewtonsoftJson(options =>
+builder.Services.AddControllers().AddNewtonsoftJson(opt =>
 {
-    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+    opt.SerializerSettings.ReferenceLoopHandling =
+        Newtonsoft.Json.ReferenceLoopHandling.Ignore;
 });
 
 var app = builder.Build();
 
 app.UseSwagger();
 app.UseSwaggerUI();
-
 // app.UseHttpsRedirection();
 app.MapControllers();
 
 app.Run();
-
-

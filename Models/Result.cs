@@ -7,22 +7,19 @@ using Microsoft.EntityFrameworkCore;
 namespace lotto_api.Models;
 
 [Table("Result")]
-[Index("Lid", Name = "fk_result_lottery")]
+[MySqlCharSet("utf8mb4")]
+[MySqlCollation("utf8mb4_general_ci")]
 public partial class Result
 {
     [Key]
-    [Column("rid")]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [Column("rid", TypeName = "int(10) unsigned")]
     public uint Rid { get; set; }
-
-    [Column("lid")]
-    public uint Lid { get; set; }
 
     [Column("payout_rate")]
     [Precision(12, 2)]
     public decimal PayoutRate { get; set; }
 
-    [ForeignKey("Lid")]
-    [InverseProperty("Results")]
-    public virtual Lottery LidNavigation { get; set; } = null!;
+    [Column("amount")]
+    [StringLength(50)]
+    public string Amount { get; set; } = null!;
 }

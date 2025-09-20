@@ -1,5 +1,5 @@
 using api_lotto.DTOs.admin;
-using lotto_api.data;
+using lotto_api.Data;
 using lotto_api.DTOs.admin;
 using lotto_api.Mappers;
 using lotto_api.Models;
@@ -13,8 +13,8 @@ namespace lotto_api.controllers
     [Route("api/[controller]")]
     public class AdminController : ControllerBase
     {
-        private readonly LotteryDbContext _context;
-        public AdminController(LotteryDbContext context)
+        private readonly ApplicationDBContext _context;
+        public AdminController(ApplicationDBContext context)
         {
             _context = context;
         }
@@ -83,7 +83,6 @@ namespace lotto_api.controllers
         [HttpPost("result-lottery")]
         public async Task<IActionResult> ResultLottery([FromBody] AdminOutResult dto)
         {
-
             const decimal PayFirst = 6000000m;
             const decimal PaySecond = 2000000m;
             const decimal PayThird = 1000000m;
@@ -92,96 +91,61 @@ namespace lotto_api.controllers
 
             var user = await _context.Users.FirstOrDefaultAsync(x => x.Uid == dto.Uid);
             if (user is null) return NotFound(new { message = " ไม่พบผู้ใช้ " });
-
             if (!string.Equals(user.Role, "admin", StringComparison.OrdinalIgnoreCase))
                 return Unauthorized(new { message = "เฉพาะผู้ดูแลระบบเท่านั้นที่สามารถจับสลากหรือประกาศผลได้." });
 
-
-            var existingResults = await _context.Results.AnyAsync();
-            if (existingResults)
-            {
+            if (await _context.Results.AnyAsync())
                 return BadRequest(new { message = "มีการออกรางวัลแล้ว กรุณารีเซ็ตระบบก่อนทำการสุ่มใหม่" });
-            }
-
 
             var pool = await _context.Lotteries
-            .Where(l => l.Status == true)
-            .Select(l => new { l.Lid, l.Number })
-            .ToListAsync();
+                .Where(l => l.Status == true && l.Number != null)
+                .Select(l => l.Number!.Trim())
+                .ToListAsync();
 
             if (pool.Count < 3)
-            {
                 return BadRequest(new { message = "จำนวนเลขลอตเตอรี่ในระบบที่พร้อมให้สุ่มน้อยเกินไป ต้องมีอย่างน้อย 3 เลขถึงจะออกรางวัลได้" });
-            }
 
             var rand = new Random();
+
+
             var picked = new HashSet<int>();
+            while (picked.Count < 3) picked.Add(rand.Next(pool.Count));
+            var idx = picked.ToList();
+            var n1 = pool[idx[0]];
+            var n2 = pool[idx[1]];
+            var n3 = pool[idx[2]];
 
-            while (picked.Count < 3)
-            {
-                picked.Add(rand.Next(pool.Count));
-            }
-
-            var idxList = picked.ToList();
-            var idx1 = idxList[0];
-            var idx2 = idxList[1];
-            var idx3 = idxList[2];
-
-            var p1 = pool[idx1];
-            var p2 = pool[idx2];
-            var p3 = pool[idx3];
-
-            var last3 = p1.Number[^3..];
-            var last2 = rand.Next(0, 100).ToString("D2");
-
-            using var tx = await _context.Database.BeginTransactionAsync();
-
-            await _context.SaveChangesAsync();
+            var last3 = n1[^3..];
+            var last2 = pool[rand.Next(pool.Count)][^2..];
 
 
             var results = new List<Result>
-            {
-                new Result { Lid = p1.Lid, PayoutRate = PayFirst  },
-                new Result { Lid = p2.Lid, PayoutRate = PaySecond },
-                new Result { Lid = p3.Lid, PayoutRate = PayThird  },
-            };
-
-            var lidsLast3 = await _context.Lotteries
-                .Where(l => l.Status == true && l.Number.EndsWith(last3))
-                .Select(l => l.Lid)
-                .ToListAsync();
-
-            results.AddRange(lidsLast3.Select(lid => new Result
-            {
-                Lid = lid,
-                PayoutRate = PayLast3
-            }));
-
-            var anyLid = pool[rand.Next(pool.Count)].Lid;
-            results.Add(new Result
-            {
-                Lid = anyLid,
-                PayoutRate = PayLast2
-            });
-
+    {
+        new Result { PayoutRate = PayFirst,  Amount = n1 },
+        new Result { PayoutRate = PaySecond, Amount = n2 },
+        new Result { PayoutRate = PayThird,  Amount = n3 },
+        new Result { PayoutRate = PayLast3,  Amount = last3 },
+        new Result { PayoutRate = PayLast2,  Amount = last2 },
+    };
 
             _context.Results.AddRange(results);
             await _context.SaveChangesAsync();
-            await tx.CommitAsync();
+
 
             return Ok(new
             {
                 message = "Result completed.",
                 prizes = new
                 {
-                    first = new { result = "รางวัลที่1 ", number = p1.Number, payout = PayFirst },
-                    second = new { result = "รางวัลที่2 ", number = p2.Number, payout = PaySecond },
-                    third = new { result = "รางวัลที่3 ", number = p3.Number, payout = PayThird },
-                    last3 = new { result = "รางวัลที่4", last3, payoutEach = PayLast3 },
-                    last2 = new { result = "รางวัลที่5", last2, payoutEach = PayLast2 }
+                    first = new { result = "รางวัลที่1 ", number = n1, payout = PayFirst },
+                    second = new { result = "รางวัลที่2 ", number = n2, payout = PaySecond },
+                    third = new { result = "รางวัลที่3 ", number = n3, payout = PayThird },
+                    last3 = new { result = "รางวัลเลขท้าย 3 ตัว", last3, payoutEach = PayLast3 },
+                    last2 = new { result = "รางวัลเลขท้าย 2 ตัว", last2, payoutEach = PayLast2 }
                 }
             });
         }
+
 
         [HttpPost("clear")]
         public async Task<IActionResult> ClearData([FromBody] Admin_ResetDTO dTO)

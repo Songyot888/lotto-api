@@ -4,15 +4,15 @@ using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 using lotto_api.Models;
 
-namespace lotto_api.data;
+namespace lotto_api.Data;
 
-public partial class LotteryDbContext : DbContext
+public partial class ApplicationDBContext : DbContext
 {
-    public LotteryDbContext()
+    public ApplicationDBContext()
     {
     }
 
-    public LotteryDbContext(DbContextOptions<LotteryDbContext> options)
+    public ApplicationDBContext(DbContextOptions<ApplicationDBContext> options)
         : base(options)
     {
     }
@@ -26,24 +26,22 @@ public partial class LotteryDbContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     public virtual DbSet<WalletTxn> WalletTxns { get; set; }
-    public object Members { get; internal set; }
-    public IEnumerable<object> Lotto { get; internal set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseMySql("server=202.28.34.203;database=mb68_66011212090;user=mb68_66011212090;password=X)iPhkST&bqz", Microsoft.EntityFrameworkCore.ServerVersion.Parse("9.3.0-mysql"));
+        => optionsBuilder.UseMySql("server=server-82-26-104-71.da.direct;database=activi89_mb68_66011212090;user=activi89_mb68_66011212090;password=KSsZwmmm8CCkVjpGaTUp", Microsoft.EntityFrameworkCore.ServerVersion.Parse("10.6.21-mariadb"));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
-            .UseCollation("utf8mb4_0900_ai_ci")
-            .HasCharSet("utf8mb4");
+            .UseCollation("latin1_swedish_ci")
+            .HasCharSet("latin1");
 
         modelBuilder.Entity<Lottery>(entity =>
         {
             entity.HasKey(e => e.Lid).HasName("PRIMARY");
 
-            entity.Property(e => e.Date).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.Date).HasDefaultValueSql("current_timestamp()");
             entity.Property(e => e.Status).HasDefaultValueSql("'1'");
 
             entity.HasOne(d => d.UidNavigation).WithMany(p => p.Lotteries)
@@ -55,7 +53,8 @@ public partial class LotteryDbContext : DbContext
         {
             entity.HasKey(e => e.Oid).HasName("PRIMARY");
 
-            entity.Property(e => e.Date).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.Date).HasDefaultValueSql("current_timestamp()");
+            entity.Property(e => e.Status).HasDefaultValueSql("'1'");
 
             entity.HasOne(d => d.LidNavigation).WithMany(p => p.Orders)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -69,25 +68,21 @@ public partial class LotteryDbContext : DbContext
         modelBuilder.Entity<Result>(entity =>
         {
             entity.HasKey(e => e.Rid).HasName("PRIMARY");
-
-            entity.HasOne(d => d.LidNavigation).WithMany(p => p.Results)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("fk_result_lottery");
         });
 
         modelBuilder.Entity<User>(entity =>
         {
             entity.HasKey(e => e.Uid).HasName("PRIMARY");
 
-            entity.Property(e => e.Date).HasDefaultValueSql("CURRENT_TIMESTAMP");
-            entity.Property(e => e.Role).HasDefaultValueSql("'USER'");
+            entity.Property(e => e.Date).HasDefaultValueSql("current_timestamp()");
+            entity.Property(e => e.Role).HasDefaultValueSql("'admin'");
         });
 
         modelBuilder.Entity<WalletTxn>(entity =>
         {
             entity.HasKey(e => e.Wid).HasName("PRIMARY");
 
-            entity.Property(e => e.Date).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.Date).HasDefaultValueSql("current_timestamp()");
             entity.Property(e => e.TopUp).HasDefaultValueSql("'0.00'");
             entity.Property(e => e.Withdraw).HasDefaultValueSql("'0.00'");
 
@@ -98,7 +93,6 @@ public partial class LotteryDbContext : DbContext
 
         OnModelCreatingPartial(modelBuilder);
     }
-
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }

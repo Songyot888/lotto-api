@@ -8,13 +8,15 @@ namespace lotto_api.Models;
 
 [Table("WalletTxn")]
 [Index("Uid", Name = "fk_wallettxn_users")]
+[MySqlCharSet("utf8mb4")]
+[MySqlCollation("utf8mb4_general_ci")]
 public partial class WalletTxn
 {
     [Key]
-    [Column("wid")]
+    [Column("wid", TypeName = "bigint(20) unsigned")]
     public ulong Wid { get; set; }
 
-    [Column("uid")]
+    [Column("uid", TypeName = "int(10) unsigned")]
     public uint Uid { get; set; }
 
     [Column("top_up")]
