@@ -41,10 +41,8 @@ namespace api_lotto.controllers
         [HttpGet("unsold")]
         public IActionResult GetUnsoldLotteries()
         {
-            // ดึงเฉพาะที่ยังไม่ขายออก (Status = 1)
             var query = _context.Lotteries
                 .Where(l => l.Status == true);
-
             var result = query.Select(l => new
             {
                 l.Lid,
@@ -76,14 +74,10 @@ namespace api_lotto.controllers
                 if (user.Balance < lottery.Price)
                     return BadRequest(new { message = "ยอดเงินใน Wallet ไม่พอ" });
 
-                // ตัดเงิน
                 user.Balance -= lottery.Price;
 
-                // อัปเดตสถานะลอตเตอรี่ (ขายแล้ว) ✅ ไม่เปลี่ยน Uid
                 lottery.Status = false;
 
-
-                // บันทึก Order → ใครซื้อใบนี้
                 var order = new Order
                 {
                     Uid = (uint)dto.memberId,
@@ -93,7 +87,7 @@ namespace api_lotto.controllers
                 _context.Orders.Add(order);
 
                 _context.SaveChanges();
-                transaction.Commit();
+       
 
                 return Ok(new
                 {
