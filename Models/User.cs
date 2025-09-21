@@ -8,12 +8,10 @@ namespace lotto_api.Models;
 
 [Index("Email", Name = "email", IsUnique = true)]
 [Index("Phone", Name = "phone", IsUnique = true)]
-[MySqlCharSet("utf8mb4")]
-[MySqlCollation("utf8mb4_general_ci")]
 public partial class User
 {
     [Key]
-    [Column("uid", TypeName = "int(10) unsigned")]
+    [Column("uid")]
     public uint Uid { get; set; }
 
     [Column("email")]

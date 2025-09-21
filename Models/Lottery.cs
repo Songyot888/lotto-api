@@ -8,15 +8,13 @@ namespace lotto_api.Models;
 
 [Table("Lottery")]
 [Index("Uid", Name = "fk_lottery_users")]
-[MySqlCharSet("utf8mb4")]
-[MySqlCollation("utf8mb4_general_ci")]
 public partial class Lottery
 {
     [Key]
-    [Column("lid", TypeName = "int(10) unsigned")]
+    [Column("lid")]
     public uint Lid { get; set; }
 
-    [Column("uid", TypeName = "int(10) unsigned")]
+    [Column("uid")]
     public uint Uid { get; set; }
 
     [Column("number")]
@@ -27,7 +25,7 @@ public partial class Lottery
     [Precision(14, 2)]
     public decimal Price { get; set; }
 
-    [Column("total", TypeName = "int(11)")]
+    [Column("total")]
     public int? Total { get; set; }
 
     [Column("date", TypeName = "datetime")]

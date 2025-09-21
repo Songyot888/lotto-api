@@ -9,18 +9,16 @@ namespace lotto_api.Models;
 [Table("Order")]
 [Index("Lid", Name = "fk_order_lottery")]
 [Index("Uid", Name = "fk_order_users")]
-[MySqlCharSet("utf8mb4")]
-[MySqlCollation("utf8mb4_general_ci")]
 public partial class Order
 {
     [Key]
-    [Column("oid", TypeName = "bigint(20) unsigned")]
+    [Column("oid")]
     public ulong Oid { get; set; }
 
-    [Column("uid", TypeName = "int(10) unsigned")]
+    [Column("uid")]
     public uint Uid { get; set; }
 
-    [Column("lid", TypeName = "int(10) unsigned")]
+    [Column("lid")]
     public uint Lid { get; set; }
 
     [Column("date", TypeName = "datetime")]
