@@ -57,6 +57,25 @@ namespace api_lotto.controllers
             return Ok(result);
         }
 
+        [HttpGet("allLotto")]
+        public IActionResult allLotto()
+        {
+            var query = _context.Lotteries
+            .Select(l => new
+            {
+                l.Lid,
+                l.Number,
+                l.Price,
+                l.Total,
+                l.Date,
+                l.StartDate,
+                l.EndDate,
+                l.Status
+            }).ToList();
+            return Ok(query);
+        }
+
+
 
         [HttpPost("buy")]
         public IActionResult BuyLottery([FromBody] buyDTO dto)
