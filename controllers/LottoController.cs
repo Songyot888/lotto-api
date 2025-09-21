@@ -454,7 +454,6 @@ namespace api_lotto.controllers
                     oid = x.Oid,
                     lotteryId = x.Lid,
                     number = x.Number,
-                    dateIso = local.ToString("o"),     // 2025-09-21T12:35:35.0000000+07:00
                     dateTh = local.ToString("d MMM yyyy", th), // เช่น 16 ก.พ. 2567 09:41
                 };
             }).ToList();
@@ -462,6 +461,27 @@ namespace api_lotto.controllers
             return Ok(result);
         }
 
+        [HttpGet("MyLotto")]
+        public async Task<IActionResult> MyLotto([FromQuery] int uid)
+        {
+            var myLotto = await (
+                from o in _context.Orders
+                join l in _context.Lotteries on o.Lid equals l.Lid
+                where o.Uid == uid
+                orderby o.Oid descending
+                select new
+                {
+                    oid = o.Oid,          // id order
+                    lotteryId = l.Lid,    // id หวย
+                    number = l.Number     // เลขหวย
+                }
+            ).ToListAsync();
+
+            if (myLotto == null || !myLotto.Any())
+                return NotFound(new { message = "ไม่พบลอตเตอรี่ของผู้ใช้นี้" });
+
+            return Ok(myLotto);
+        }
         private static TimeZoneInfo GetThaiTimeZone()
         {
             try { return TimeZoneInfo.FindSystemTimeZoneById("Asia/Bangkok"); }          // Linux/macOS
