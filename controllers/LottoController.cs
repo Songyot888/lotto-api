@@ -471,11 +471,14 @@ namespace api_lotto.controllers
                 orderby o.Oid descending
                 select new
                 {
-                    oid = o.Oid,
-                    lotteryId = l.Lid,
-                    number = l.Number
+                    oid = o.Oid,          // id order
+                    lotteryId = l.Lid,    // id หวย
+                    number = l.Number     // เลขหวย
                 }
             ).ToListAsync();
+
+            if (myLotto == null || !myLotto.Any())
+                return NotFound(new { message = "ไม่พบลอตเตอรี่ของผู้ใช้นี้" });
 
             return Ok(myLotto);
         }
