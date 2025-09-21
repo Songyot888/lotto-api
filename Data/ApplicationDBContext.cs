@@ -29,19 +29,19 @@ public partial class ApplicationDBContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseMySql("server=server-82-26-104-71.da.direct;database=activi89_mb68_66011212090;user=activi89_mb68_66011212090;password=KSsZwmmm8CCkVjpGaTUp", Microsoft.EntityFrameworkCore.ServerVersion.Parse("10.6.21-mariadb"));
+        => optionsBuilder.UseMySql("server=202.28.34.203;database=mb68_66011212090;user=mb68_66011212090;password=X)iPhkST&bqz", Microsoft.EntityFrameworkCore.ServerVersion.Parse("9.4.0-mysql"));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
-            .UseCollation("latin1_swedish_ci")
-            .HasCharSet("latin1");
+            .UseCollation("utf8mb4_0900_ai_ci")
+            .HasCharSet("utf8mb4");
 
         modelBuilder.Entity<Lottery>(entity =>
         {
             entity.HasKey(e => e.Lid).HasName("PRIMARY");
 
-            entity.Property(e => e.Date).HasDefaultValueSql("current_timestamp()");
+            entity.Property(e => e.Date).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.Status).HasDefaultValueSql("'1'");
 
             entity.HasOne(d => d.UidNavigation).WithMany(p => p.Lotteries)
@@ -53,7 +53,7 @@ public partial class ApplicationDBContext : DbContext
         {
             entity.HasKey(e => e.Oid).HasName("PRIMARY");
 
-            entity.Property(e => e.Date).HasDefaultValueSql("current_timestamp()");
+            entity.Property(e => e.Date).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.Status).HasDefaultValueSql("'1'");
 
             entity.HasOne(d => d.LidNavigation).WithMany(p => p.Orders)
@@ -74,15 +74,15 @@ public partial class ApplicationDBContext : DbContext
         {
             entity.HasKey(e => e.Uid).HasName("PRIMARY");
 
-            entity.Property(e => e.Date).HasDefaultValueSql("current_timestamp()");
-            entity.Property(e => e.Role).HasDefaultValueSql("'admin'");
+            entity.Property(e => e.Date).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.Role).HasDefaultValueSql("'USER'");
         });
 
         modelBuilder.Entity<WalletTxn>(entity =>
         {
             entity.HasKey(e => e.Wid).HasName("PRIMARY");
 
-            entity.Property(e => e.Date).HasDefaultValueSql("current_timestamp()");
+            entity.Property(e => e.Date).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.TopUp).HasDefaultValueSql("'0.00'");
             entity.Property(e => e.Withdraw).HasDefaultValueSql("'0.00'");
 

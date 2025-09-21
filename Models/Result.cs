@@ -7,12 +7,10 @@ using Microsoft.EntityFrameworkCore;
 namespace lotto_api.Models;
 
 [Table("Result")]
-[MySqlCharSet("utf8mb4")]
-[MySqlCollation("utf8mb4_general_ci")]
 public partial class Result
 {
     [Key]
-    [Column("rid", TypeName = "int(10) unsigned")]
+    [Column("rid")]
     public uint Rid { get; set; }
 
     [Column("payout_rate")]

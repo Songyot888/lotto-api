@@ -1,10 +1,10 @@
+using lotto_api.Data;
 using Microsoft.EntityFrameworkCore;
 using MySqlConnector;
-using lotto_api.Data;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
-// อ่านจาก ConnectionStrings__DefaultConnection
 var conn = builder.Configuration.GetConnectionString("DefaultConnection");
 
 try
@@ -17,7 +17,6 @@ try
 catch (Exception ex)
 {
     Console.WriteLine("MySQL connect failed: " + ex.Message);
-    // ไม่ return; ให้ EF ลองด้วยก็ได้ แต่ log จะบอกชัดว่าพังเพราะอะไร
 }
 
 builder.Services.AddDbContext<ApplicationDBContext>(opt =>
