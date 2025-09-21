@@ -461,8 +461,8 @@ namespace api_lotto.controllers
             return Ok(result);
         }
 
-        [HttpGet("MyLotto")]
-        public async Task<IActionResult> MyLotto([FromQuery] int uid)
+        [HttpGet("MyLotto/{uid}")]
+        public async Task<IActionResult> MyLotto([FromRoute] int uid)
         {
             var myLotto = await (
                 from o in _context.Orders
