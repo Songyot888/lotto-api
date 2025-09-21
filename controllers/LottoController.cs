@@ -1,4 +1,5 @@
 
+using System.Globalization;
 using lotto_api.Data;
 using lotto_api.DTOs.lottory;
 using lotto_api.Models;
@@ -177,7 +178,7 @@ namespace api_lotto.controllers
         [HttpPost("claim")]
         public IActionResult ClaimPrize([FromBody] claimDTO dto)
         {
-          
+
             var order = _context.Orders
                 .FirstOrDefault(o => o.Uid == (uint)dto.memberId
                                      && o.Oid == (uint)dto.orderId
@@ -345,6 +346,54 @@ namespace api_lotto.controllers
             }).ToList();
 
             return Ok(result);
+        }
+
+
+        [HttpPost("TxnLotto")]
+        public async Task<IActionResult> TxnLottoAsync([FromBody] TxnLottoDTO dto)
+        {
+            if (dto == null) return BadRequest(new { message = "ข้อมูลว่าง" });
+
+            var raw = await _context.Orders
+                .Where(o => o.Uid == (uint)dto.memberId)
+                .OrderByDescending(o => o.Date)
+                .Select(o => new
+                {
+                    o.Oid,
+                    o.Lid,
+                    Number = o.LidNavigation.Number,
+                    o.Date
+                })
+                .ToListAsync();
+
+            var th = new CultureInfo("th-TH");
+            var thaiTz = GetThaiTimeZone(); 
+
+            var result = raw.Select(x =>
+            {
+                var utc = x.Date.Kind == DateTimeKind.Unspecified
+                            ? DateTime.SpecifyKind(x.Date, DateTimeKind.Utc)
+                            : x.Date.ToUniversalTime();
+
+                var local = TimeZoneInfo.ConvertTimeFromUtc(utc, thaiTz);
+
+                return new
+                {
+                    oid = x.Oid,
+                    lotteryId = x.Lid,
+                    number = x.Number,
+                    dateIso = local.ToString("o"),     // 2025-09-21T12:35:35.0000000+07:00
+                    dateTh = local.ToString("d MMM yyyy", th), // เช่น 16 ก.พ. 2567 09:41
+                };
+            }).ToList();
+
+            return Ok(result);
+        }
+
+        private static TimeZoneInfo GetThaiTimeZone()
+        {
+            try { return TimeZoneInfo.FindSystemTimeZoneById("Asia/Bangkok"); }          // Linux/macOS
+            catch { return TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"); } // Windows
         }
 
     }
