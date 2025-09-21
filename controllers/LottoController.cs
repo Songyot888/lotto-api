@@ -60,34 +60,33 @@ namespace api_lotto.controllers
         [HttpPost("buy")]
         public IActionResult BuyLottery([FromBody] buyDTO dto)
         {
-            using var transaction = _context.Database.BeginTransaction();
             try
             {
                 var user = _context.Users.FirstOrDefault(u => u.Uid == dto.memberId);
                 if (user == null)
                     return NotFound(new { message = "ไม่พบสมาชิก" });
 
-                var lottery = _context.Lotteries.FirstOrDefault(l => l.Lid == dto.lotteryId && l.Status == true);
+                var lottery = _context.Lotteries
+                    .FirstOrDefault(l => l.Lid == dto.lotteryId && l.Status == true);
                 if (lottery == null)
                     return BadRequest(new { message = "ลอตเตอรี่ถูกขายแล้วหรือไม่มีอยู่" });
 
                 if (user.Balance < lottery.Price)
                     return BadRequest(new { message = "ยอดเงินใน Wallet ไม่พอ" });
 
+                // ปรับยอด/สถานะ
                 user.Balance -= lottery.Price;
-
                 lottery.Status = false;
 
                 var order = new Order
                 {
                     Uid = (uint)dto.memberId,
                     Lid = (uint)dto.lotteryId,
-                    Date = DateTime.Now
+                    Date = DateTime.UtcNow   // แนะนำใช้ UTC
                 };
                 _context.Orders.Add(order);
 
-                _context.SaveChanges();
-       
+                _context.SaveChanges(); // EF จะทำใน transaction ให้อยู่แล้ว
 
                 return Ok(new
                 {
@@ -101,7 +100,6 @@ namespace api_lotto.controllers
             }
             catch (Exception ex)
             {
-                transaction.Rollback();
                 return StatusCode(500, new { message = "เกิดข้อผิดพลาด", error = ex.Message });
             }
         }
@@ -326,6 +324,24 @@ namespace api_lotto.controllers
             {
                 return StatusCode(500, new { message = "เกิดข้อผิดพลาด", error = ex.Message });
             }
+        }
+
+        [HttpPost("Txnwallet")]
+        public IActionResult Txnwallet([FromBody] TxnwalletDTO dto)
+        {
+            var result = _context.WalletTxns
+            .Where(u => u.Uid == dto.memberId)
+            .Select(s => new
+            {
+                wid = s.Wid,
+                uid = dto.memberId,
+                topUp = s.TopUp,
+                withdraw = s.Withdraw,
+                status = s.Status,
+                date = s.Date
+            }).ToList();
+
+            return Ok(result);
         }
 
     }
