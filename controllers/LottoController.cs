@@ -348,6 +348,78 @@ namespace api_lotto.controllers
             return Ok(result);
         }
 
+        [HttpPost("Lottol3")]
+        public async Task<IActionResult> Lottol3([FromBody] allLottoDTO dto)
+        {
+            if (dto == null) return BadRequest(new { message = "ข้อมูลว่าง" });
+
+            var term = new string((dto.number_lottory.ToString() ?? "")
+                                  .Where(char.IsDigit).ToArray());
+
+            if (term.Length != 3)
+                return BadRequest(new { message = "ใส่เลข 3 หลัก" });
+
+            var result = await _context.Lotteries
+                .AsNoTracking()
+                .Where(l => l.Status == true
+                            && l.Number != null
+                            && l.Number.EndsWith(term))
+                .OrderBy(l => l.Number)
+                .Select(l => new { lid = l.Lid, number = l.Number, price = l.Price })
+                .ToListAsync();
+
+            return Ok(result);
+        }
+
+
+        [HttpPost("Lottof3")]
+        public async Task<IActionResult> Lottof3([FromBody] allLottoDTO dto)
+        {
+
+            if (dto == null) return BadRequest(new { message = "ข้อมูลว่าง" });
+
+            var term = new string((dto.number_lottory.ToString() ?? "")
+                                  .Where(char.IsDigit).ToArray());
+
+            if (term.Length != 3)
+                return BadRequest(new { message = "ใส่เลข 3 หลัก" });
+
+            var result = await _context.Lotteries
+                .AsNoTracking()
+                .Where(l => l.Status == true
+                            && l.Number != null
+                            && l.Number.StartsWith(term))
+                .OrderBy(l => l.Number)
+                .Select(l => new { lid = l.Lid, number = l.Number, price = l.Price })
+                .ToListAsync();
+
+            return Ok(result);
+        }
+        [HttpPost("Lottol2")]
+        public async Task<IActionResult> Lottol2([FromBody] allLottoDTO dto)
+        {
+
+            if (dto == null) return BadRequest(new { message = "ข้อมูลว่าง" });
+
+            var term = new string((dto.number_lottory.ToString() ?? "")
+                                  .Where(char.IsDigit).ToArray());
+
+            if (term.Length != 2)
+                return BadRequest(new { message = "ใส่เลข 2 หลัก" });
+
+            var result = await _context.Lotteries
+                .AsNoTracking()
+                .Where(l => l.Status == true
+                            && l.Number != null
+                            && l.Number.EndsWith(term))
+                .OrderBy(l => l.Number)
+                .Select(l => new { lid = l.Lid, number = l.Number, price = l.Price })
+                .ToListAsync();
+
+            return Ok(result);
+        }
+
+
 
         [HttpPost("TxnLotto")]
         public async Task<IActionResult> TxnLottoAsync([FromBody] TxnLottoDTO dto)
@@ -367,7 +439,7 @@ namespace api_lotto.controllers
                 .ToListAsync();
 
             var th = new CultureInfo("th-TH");
-            var thaiTz = GetThaiTimeZone(); 
+            var thaiTz = GetThaiTimeZone();
 
             var result = raw.Select(x =>
             {
