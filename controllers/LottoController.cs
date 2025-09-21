@@ -177,22 +177,19 @@ namespace api_lotto.controllers
         [HttpPost("claim")]
         public IActionResult ClaimPrize([FromBody] claimDTO dto)
         {
-            // 1) หา Order ของ user สำหรับใบที่ระบุ (cast ให้ชนิดตรงกับ model)
+          
             var order = _context.Orders
-                .Where(o => o.Uid == (uint)dto.memberId && o.Oid == (uint)dto.orderId)
-                .Select(s => new
-                {
-                    s.Lid,
-                    Lottery = s.LidNavigation
-                })
-                .FirstOrDefault();
+                .FirstOrDefault(o => o.Uid == (uint)dto.memberId
+                                     && o.Oid == (uint)dto.orderId
+                                     && o.Status == true);
 
             if (order == null)
-                return NotFound(new { message = "ไม่พบข้อมูลการซื้อ" });
+                return Conflict(new { message = "ขึ้นเงินไปแล้ว หรือไม่พบข้อมูลการซื้อ" }); // 409
 
-            var lottery = order.Lottery;
+            var lottery = _context.Lotteries.FirstOrDefault(l => l.Lid == order.Lid);
+            if (lottery == null)
+                return NotFound(new { message = "ไม่พบลอตเตอรี่" });
 
-            // 2) ต้องมีการออกรางวัลแล้ว
             var results = _context.Results
                 .Select(r => new { r.Amount, r.PayoutRate })
                 .ToList();
@@ -200,7 +197,8 @@ namespace api_lotto.controllers
             if (results.Count == 0)
                 return BadRequest(new { message = "ยังไม่มีการออกรางวัล" });
 
-            var matched = results.FirstOrDefault(r => lottery.Number != null && lottery.Number.EndsWith(r.Amount.ToString()));
+            var matched = results.FirstOrDefault(r => lottery.Number != null &&
+                                                      lottery.Number.EndsWith(r.Amount.ToString()));
             var prize = matched?.PayoutRate ?? 0m;
 
             if (prize <= 0)
@@ -215,8 +213,10 @@ namespace api_lotto.controllers
                 });
             }
 
+            // จ่ายเงินและปิดออเดอร์
             var user = _context.Users.First(u => u.Uid == (uint)dto.memberId);
             user.Balance += prize;
+            order.Status = false;
 
             _context.SaveChanges();
 
@@ -226,9 +226,12 @@ namespace api_lotto.controllers
                 lotteryId = lottery.Lid,
                 number = lottery.Number,
                 amount = prize,
-                wallet = user.Balance
+                wallet = user.Balance,
+                orderStatus = order.Status
             });
         }
+
+
 
 
         [HttpPost("topup")]
