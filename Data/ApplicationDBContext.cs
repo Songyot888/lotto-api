@@ -54,7 +54,6 @@ public partial class ApplicationDBContext : DbContext
             entity.HasKey(e => e.Oid).HasName("PRIMARY");
 
             entity.Property(e => e.Date).HasDefaultValueSql("CURRENT_TIMESTAMP");
-            entity.Property(e => e.Status).HasDefaultValueSql("'1'");
 
             entity.HasOne(d => d.LidNavigation).WithMany(p => p.Orders)
                 .OnDelete(DeleteBehavior.ClientSetNull)

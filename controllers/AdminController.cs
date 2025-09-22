@@ -155,7 +155,7 @@ namespace lotto_api.controllers
             const decimal PayThird = 1000000m;
             const decimal PayLast3 = 4000m;
             const decimal PayLast2 = 2000m;
-            
+
 
             var user = await _context.Users.FirstOrDefaultAsync(x => x.Uid == dto.Uid);
             if (user is null) return NotFound(new { message = " ไม่พบผู้ใช้ " });

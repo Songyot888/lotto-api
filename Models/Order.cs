@@ -24,7 +24,6 @@ public partial class Order
     [Column("date", TypeName = "datetime")]
     public DateTime Date { get; set; }
 
-    [Required]
     [Column("status")]
     public bool? Status { get; set; }
 
