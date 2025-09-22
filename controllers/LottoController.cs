@@ -150,21 +150,16 @@ namespace api_lotto.controllers
         [HttpPost("check")]
         public IActionResult CheckResult([FromBody] checkLottortDTO dto)
         {
-            var order = _context.Orders
-                .Where(o => o.Uid == dto.memberId && o.Lid == dto.lid)
-                .Select(s => new
-                {
-                    s.Oid,
-                    Lottery = s.LidNavigation
-                })
-                .FirstOrDefault();
+            var orderEntity = _context.Orders
+                .Include(o => o.LidNavigation)
+                .FirstOrDefault(o => o.Uid == dto.memberId && o.Lid == dto.lid);
 
-            if (order == null)
+            if (orderEntity == null)
             {
                 return NotFound(new { message = "ไม่พบข้อมูลการซื้อของ user กับหวยใบนี้" });
             }
 
-            var lottery = order.Lottery;
+            var lottery = orderEntity.LidNavigation;
 
             var results = _context.Results.ToList();
             if (results.Count == 0)
@@ -179,8 +174,13 @@ namespace api_lotto.controllers
                 });
             }
 
-            var matched = results.FirstOrDefault(r => lottery.Number!.EndsWith(r.Amount.ToString()));
-            decimal prize = matched?.PayoutRate ?? 0;
+            var matched = results.FirstOrDefault(r => lottery.Number != null &&
+                                                      lottery.Number.EndsWith(r.Amount.ToString()));
+            decimal prize = matched?.PayoutRate ?? 0m;
+
+            // อัปเดตสถานะของคำสั่งซื้อ: 1 (true) ถ้าถูกรางวัล, 0 (false) ถ้าไม่ถูกรางวัล
+            orderEntity.Status = prize > 0m;
+            _context.SaveChanges();
 
             return Ok(new
             {
