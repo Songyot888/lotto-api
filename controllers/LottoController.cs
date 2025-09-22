@@ -453,7 +453,8 @@ namespace api_lotto.controllers
                     o.Oid,
                     o.Lid,
                     Number = o.LidNavigation.Number,
-                    o.Date
+                    o.Date,
+                    o.Status
                 })
                 .ToListAsync();
 
@@ -473,7 +474,8 @@ namespace api_lotto.controllers
                     oid = x.Oid,
                     lotteryId = x.Lid,
                     number = x.Number,
-                    dateTh = local.ToString("d MMM yyyy", th), // เช่น 16 ก.พ. 2567 09:41
+                    status = x.Status,
+                    dateTh = local.ToString("d MMM yyyy", th),
                 };
             }).ToList();
 
