@@ -107,7 +107,6 @@ namespace lotto_api.controllers
 
             var rand = new Random();
 
-
             var picked = new HashSet<int>();
             while (picked.Count < 3) picked.Add(rand.Next(pool.Count));
             var idx = picked.ToList();
@@ -116,21 +115,20 @@ namespace lotto_api.controllers
             var n3 = pool[idx[2]];
 
             var last3 = n1[^3..];
-            var last2 = pool[rand.Next(pool.Count)][^2..];
-
+            // --- บรรทัดที่แก้ไข ---
+            var last2 = rand.Next(0, 100).ToString("D2"); // สุ่มเลข 0-99 แล้วจัดรูปแบบให้เป็น 2 หลัก (เช่น 05, 12)
 
             var results = new List<Result>
-            {
-                new Result { PayoutRate = PayFirst,  Amount = n1 },
-                new Result { PayoutRate = PaySecond, Amount = n2 },
-                new Result { PayoutRate = PayThird,  Amount = n3 },
-                new Result { PayoutRate = PayLast3,  Amount = last3 },
-                new Result { PayoutRate = PayLast2,  Amount = last2 },
-            };
+    {
+        new Result { PayoutRate = PayFirst,  Amount = n1 },
+        new Result { PayoutRate = PaySecond, Amount = n2 },
+        new Result { PayoutRate = PayThird,  Amount = n3 },
+        new Result { PayoutRate = PayLast3,  Amount = last3 },
+        new Result { PayoutRate = PayLast2,  Amount = last2 },
+    };
 
             _context.Results.AddRange(results);
             await _context.SaveChangesAsync();
-
 
             return Ok(new
             {
@@ -156,7 +154,6 @@ namespace lotto_api.controllers
             const decimal PayLast3 = 4000m;
             const decimal PayLast2 = 2000m;
 
-
             var user = await _context.Users.FirstOrDefaultAsync(x => x.Uid == dto.Uid);
             if (user is null) return NotFound(new { message = " ไม่พบผู้ใช้ " });
             if (!string.Equals(user.Role, "admin", StringComparison.OrdinalIgnoreCase))
@@ -178,7 +175,6 @@ namespace lotto_api.controllers
 
             var rand = new Random();
 
-
             var picked = new HashSet<int>();
             while (picked.Count < 3) picked.Add(rand.Next(pool.Count));
             var idx = picked.ToList();
@@ -188,21 +184,20 @@ namespace lotto_api.controllers
 
             // เลือกเลขท้ายจากเลขที่มีการซื้อเช่นกัน
             var last3 = n1[^3..];
-            var last2 = pool[rand.Next(pool.Count)][^2..];
-
+            // --- บรรทัดที่แก้ไข ---
+            var last2 = rand.Next(0, 100).ToString("D2"); // สุ่มเลข 0-99 แล้วจัดรูปแบบให้เป็น 2 หลัก (เช่น 05, 12)
 
             var results = new List<Result>
-                {
-                    new Result { PayoutRate = PayFirst,  Amount = n1 },
-                    new Result { PayoutRate = PaySecond, Amount = n2 },
-                    new Result { PayoutRate = PayThird,  Amount = n3 },
-                    new Result { PayoutRate = PayLast3,  Amount = last3 },
-                    new Result { PayoutRate = PayLast2,  Amount = last2 },
-                };
+    {
+        new Result { PayoutRate = PayFirst,  Amount = n1 },
+        new Result { PayoutRate = PaySecond, Amount = n2 },
+        new Result { PayoutRate = PayThird,  Amount = n3 },
+        new Result { PayoutRate = PayLast3,  Amount = last3 },
+        new Result { PayoutRate = PayLast2,  Amount = last2 },
+    };
 
             _context.Results.AddRange(results);
             await _context.SaveChangesAsync();
-
 
             return Ok(new
             {
