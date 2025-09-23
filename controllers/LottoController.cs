@@ -178,9 +178,6 @@ namespace api_lotto.controllers
                                                       lottery.Number.EndsWith(r.Amount.ToString()));
             decimal prize = matched?.PayoutRate ?? 0m;
 
-            // อัปเดตสถานะของคำสั่งซื้อ: 1 (true) ถ้าถูกรางวัล, 0 (false) ถ้าไม่ถูกรางวัล
-            orderEntity.Status = prize > 0m;
-            _context.SaveChanges();
 
             return Ok(new
             {
@@ -197,14 +194,16 @@ namespace api_lotto.controllers
         [HttpPost("claim")]
         public IActionResult ClaimPrize([FromBody] claimDTO dto)
         {
-
             var order = _context.Orders
                 .FirstOrDefault(o => o.Uid == (uint)dto.memberId
-                                     && o.Oid == (uint)dto.orderId
-                                     && o.Status == null);
+                                     && o.Oid == (uint)dto.orderId);
 
-            if (order != null)
-                return Conflict(new { message = "ขึ้นเงินไปแล้ว หรือไม่พบข้อมูลการซื้อ" }); 
+            if (order == null)
+                return NotFound(new { message = "ไม่พบข้อมูลการซื้อ" });
+
+            // เช็คว่าขึ้นเงินไปแล้วหรือยัง (Status == false = ขึ้นเงินแล้ว)
+            if (order.Status == false)
+                return Conflict(new { message = "ขึ้นเงินไปแล้ว" });
 
             var lottery = _context.Lotteries.FirstOrDefault(l => l.Lid == order.Lid);
             if (lottery == null)
@@ -223,17 +222,21 @@ namespace api_lotto.controllers
 
             if (prize <= 0)
             {
+                // ไม่ถูกรางวัล - เปลี่ยนสถานะเป็น true (ไม่ถูก)
+                order.Status = true;
+                _context.SaveChanges();
+
                 return BadRequest(new
                 {
                     message = "ไม่ถูกรางวัล",
                     lotteryId = lottery.Lid,
                     number = lottery.Number,
                     amount = 0,
-                    status = "ไม่ถูกรางวัลจริงๆ"
+                    status = "ไม่ถูกรางวัล"
                 });
             }
 
-            // จ่ายเงินและปิดออเดอร์
+            // ถูกรางวัล - จ่ายเงินและปิดออเดอร์
             var user = _context.Users.First(u => u.Uid == (uint)dto.memberId);
             user.Balance += prize;
             order.Status = false;
