@@ -510,7 +510,8 @@ namespace api_lotto.controllers
                 {
                     oid = o.Oid,
                     lotteryId = l.Lid,
-                    number = l.Number
+                    number = l.Number,
+                    status = l.Status
                 }
             ).ToListAsync();
 
