@@ -167,28 +167,41 @@ namespace api_lotto.controllers
                 return Ok(new
                 {
                     message = "ยังไม่มีการออกรางวัล",
-                    lotteryId = lottery.Lid,
-                    number = lottery.Number,
-                    prize = 0,
-                    status = "ยังไม่ขึ้นเงิน"
+                    isWin = false,
+                    prize = 0
                 });
             }
 
             var matched = results.FirstOrDefault(r => lottery.Number != null &&
                                                       lottery.Number.EndsWith(r.Amount.ToString()));
-            decimal prize = matched?.PayoutRate ?? 0m;
 
-
-            return Ok(new
+            if (matched != null)
             {
-                message = prize > 0 ? "ถูกรางวัล" : "ไม่ถูกรางวัล",
-                lotteryId = lottery.Lid,
-                number = lottery.Number,
-                prize,
-                status = "ยังไม่ขึ้นเงิน"
-            });
-        }
+                // กรณีถูกรางวัล
+                decimal prize = matched.PayoutRate;
+                return Ok(new
+                {
+                    isWin = true,
+                    message = "ถูกรางวัล",
+                    lotteryId = lottery.Lid,
+                    number = lottery.Number,
+                    prize = prize
+                });
+            }
+            else
+            {
 
+                orderEntity.Status = true;
+                _context.SaveChanges();
+
+                return Ok(new
+                {
+                    isWin = false,
+                    message = "ไม่ถูกรางวัล",
+                    prize = 0
+                });
+            }
+        }
 
 
         [HttpPost("claim")]
@@ -239,7 +252,7 @@ namespace api_lotto.controllers
             // ถูกรางวัล - จ่ายเงินและปิดออเดอร์
             var user = _context.Users.First(u => u.Uid == (uint)dto.memberId);
             user.Balance += prize;
-            order.Status = false;
+            order.Status = false; // 0 = ขึ้นเงินแล้ว
 
             _context.SaveChanges();
 

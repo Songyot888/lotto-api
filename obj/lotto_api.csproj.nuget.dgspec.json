@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Mobile\\lotto-api\\lotto_api.csproj": {}
+    "d:\\Mobile\\lotto-api\\lotto_api.csproj": {}
   },
   "projects": {
-    "D:\\Mobile\\lotto-api\\lotto_api.csproj": {
+    "d:\\Mobile\\lotto-api\\lotto_api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Mobile\\lotto-api\\lotto_api.csproj",
+        "projectUniqueName": "d:\\Mobile\\lotto-api\\lotto_api.csproj",
         "projectName": "lotto_api",
-        "projectPath": "D:\\Mobile\\lotto-api\\lotto_api.csproj",
+        "projectPath": "d:\\Mobile\\lotto-api\\lotto_api.csproj",
         "packagesPath": "C:\\Users\\nath\\.nuget\\packages\\",
-        "outputPath": "D:\\Mobile\\lotto-api\\obj\\",
+        "outputPath": "d:\\Mobile\\lotto-api\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
