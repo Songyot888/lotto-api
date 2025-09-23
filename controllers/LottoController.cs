@@ -520,6 +520,80 @@ namespace api_lotto.controllers
 
             return Ok(myLotto);
         }
+
+        [HttpGet("winning-history/{uid}")]
+        public async Task<IActionResult> GetWinningHistory([FromRoute] int uid)
+        {
+            var winningResults = await _context.Results.ToListAsync();
+            if (!winningResults.Any())
+            {
+                return Ok(new { message = "ยังไม่มีการออกรางวัล", winningHistory = new List<object>() });
+            }
+
+            var userLotteries = await (
+                from o in _context.Orders
+                join l in _context.Lotteries on o.Lid equals l.Lid
+                where o.Uid == uid && o.Status == false
+                select new
+                {
+                    Number = l.Number,
+                    OrderDate = o.Date
+                }
+            ).ToListAsync();
+
+            var firstPrize = winningResults.FirstOrDefault(r => r.PayoutRate == 6000000m)?.Amount;
+            var secondPrize = winningResults.FirstOrDefault(r => r.PayoutRate == 2000000m)?.Amount;
+            var thirdPrize = winningResults.FirstOrDefault(r => r.PayoutRate == 1000000m)?.Amount;
+            var last3Prize = winningResults.FirstOrDefault(r => r.PayoutRate == 4000m)?.Amount;
+            var last2Prize = winningResults.FirstOrDefault(r => r.PayoutRate == 2000m)?.Amount;
+
+            var winningHistory = new List<object>();
+
+
+            var thCulture = new CultureInfo("th-TH");
+            var thaiTimeZone = GetThaiTimeZone();
+
+            foreach (var lotto in userLotteries)
+            {
+                if (string.IsNullOrEmpty(lotto.Number)) continue;
+
+                var utcDate = lotto.OrderDate.Kind == DateTimeKind.Unspecified
+                                ? DateTime.SpecifyKind(lotto.OrderDate, DateTimeKind.Utc)
+                                : lotto.OrderDate.ToUniversalTime();
+                var thaiLocalTime = TimeZoneInfo.ConvertTimeFromUtc(utcDate, thaiTimeZone);
+                var formattedDateTh = thaiLocalTime.ToString("d MMM yyyy", thCulture);
+
+                // ตรวจสอบรางวัลและเพิ่มข้อมูลลง List พร้อมกับวันที่
+                if (lotto.Number.Equals(firstPrize))
+                {
+                    winningHistory.Add(new { lotto.Number, Prize = "รางวัลที่ 1", Payout = 6000000m, Date = formattedDateTh });
+                }
+                else if (lotto.Number.Equals(secondPrize))
+                {
+                    winningHistory.Add(new { lotto.Number, Prize = "รางวัลที่ 2", Payout = 2000000m, Date = formattedDateTh });
+                }
+                else if (lotto.Number.Equals(thirdPrize))
+                {
+                    winningHistory.Add(new { lotto.Number, Prize = "รางวัลที่ 3", Payout = 1000000m, Date = formattedDateTh });
+                }
+                else if (last3Prize != null && lotto.Number.EndsWith(last3Prize))
+                {
+                    winningHistory.Add(new { lotto.Number, Prize = "รางวัลเลขท้าย 3 ตัว", Payout = 4000m, Date = formattedDateTh });
+                }
+                else if (last2Prize != null && lotto.Number.EndsWith(last2Prize))
+                {
+                    winningHistory.Add(new { lotto.Number, Prize = "รางวัลเลขท้าย 2 ตัว", Payout = 2000m, Date = formattedDateTh });
+                }
+            }
+
+            return Ok(new
+            {
+                message = $"พบประวัติการถูกรางวัล {winningHistory.Count} รายการ",
+                winningHistory = winningHistory
+            });
+        }
+
+
         private static TimeZoneInfo GetThaiTimeZone()
         {
             try { return TimeZoneInfo.FindSystemTimeZoneById("Asia/Bangkok"); }          // Linux/macOS
