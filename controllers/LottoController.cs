@@ -201,10 +201,10 @@ namespace api_lotto.controllers
             var order = _context.Orders
                 .FirstOrDefault(o => o.Uid == (uint)dto.memberId
                                      && o.Oid == (uint)dto.orderId
-                                     && o.Status == true);
+                                     && o.Status == null);
 
-            if (order == null)
-                return Conflict(new { message = "ขึ้นเงินไปแล้ว หรือไม่พบข้อมูลการซื้อ" }); // 409
+            if (order != null)
+                return Conflict(new { message = "ขึ้นเงินไปแล้ว หรือไม่พบข้อมูลการซื้อ" }); 
 
             var lottery = _context.Lotteries.FirstOrDefault(l => l.Lid == order.Lid);
             if (lottery == null)
